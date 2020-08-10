@@ -16,7 +16,7 @@ class WebConnector():
     # this method pull all the url of a city quadrant based on the
     # city, region and the number of pages requested if pagefirst or
     # pagelast is 0 then max page is used.
-    def PullRegionalLinks(self, city, region, page_first=0, page_last=0):
+    def PullRegionalLinks(self, city, region, page_first=0, page_last=0, progress=False):
 
         assert type(city) == str, "city must be expressed as a string"
         assert len(city) > 0, "city length must be greater then 0"
@@ -27,8 +27,19 @@ class WebConnector():
             page_last = self.GetLastQuadrantPage(city=city,region=region)
             page_first = 1
 
-        for page in range(page_first,page_last):
-            pass
+        linkList = []
+        frontUrl = "https://www.livrealestate.ca/idx/"
+        for page in range(page_first,page_last+1):
+            pageLink = self.mainUrl + "/" + city + "-" + region + "/?pg=" + str(page)
+            r = requests.get(pageLink)
+            soup = BeautifulSoup(r.content, 'html5lib')
+            links = soup.findAll('a', attrs={'class': 'js-listing-detail'})
+            for link in links:
+                if link['href'] != "javascript:void(0);":
+                    linkList.append(frontUrl + link['href'])
+            if progress == True:
+                print("Page " + str(page) + " of " + str(page_last) + " extracted")
+        return linkList
 
 
     # this method
@@ -47,16 +58,11 @@ class WebConnector():
         firstPageUrl = self.mainUrl + "/" + city + "-" + region + "/"
         name = 'div'
         attribute = {'class': 'si-container si-pager js-lw-pager'}
-        table = fun.extractSoup(firstPageUrl,name,attribute)
+        r = requests.get(firstPageUrl)
+        soup = BeautifulSoup(r.content, 'html5lib')
+        table = soup.find(name, attrs=attribute)
         pageList = []
         for item in table.findAll('li'):
             if fun.isNumber(item.text) == True:
                 pageList.append(int(item.text))
         return max(pageList)
-
-
-"https://www.livrealestate.ca/calgary-south/"
-
-frontUrl = "https://www.livrealestate.ca"
-testClass = WebConnector(frontUrl)
-print(testClass.GetLastQuadrantPage("edmonton","central"))

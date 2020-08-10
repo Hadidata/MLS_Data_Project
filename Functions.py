@@ -19,7 +19,7 @@ def extractSoup(url,name,attrs):
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html5lib')
-    table = soup.find(name, attrs=attrs)
+    table = soup.findAll(name, attrs=attrs)
     return table
 
 ############# functions to remove after ###############
