@@ -12,6 +12,17 @@ def isNumber(Str):
     except ValueError:
         return False
 
+# This function extracts data using the
+# beautiful soup library. requires the url,
+# the name of the tag and the attribute
+def extractSoup(url,name,attrs):
+
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, 'html5lib')
+    table = soup.find(name, attrs=attrs)
+    return table
+
+############# functions to remove after ###############
 #test function
 def headingTest(url):
     reqs = requests.get(url)

@@ -132,6 +132,12 @@ class liveMls:
 # Dump to csv for comprehensive logic testing (price history)
 #
 # URL = "https://www.livrealestate.ca/calgary-city-centre/"
+# URL = "https://www.livrealestate.ca/calgary-west/"
+# URL = "https://www.livrealestate.ca/calgary-east/"
+# URL = "https://www.livrealestate.ca/calgary-northeast/"
+# URL = "https://www.livrealestate.ca/calgary-northwest/"
+# URL = "https://www.livrealestate.ca/calgary-south/"
+# URL = "https://www.livrealestate.ca/calgary-southeast/"
 # MlsData = liveMls(URL).getRoomInfo(progress=True)
 # #print(MlsData)
 # csvString = "C://Users//Hadi-PC//PycharmProjects//Extracts//Rooms_CityCenter.csv"

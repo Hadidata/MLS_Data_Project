@@ -12,12 +12,6 @@ URL1 = "https://www.livrealestate.ca/idx/443-mahogany-blvd-se-calgary-ab-t3m-1z5
 dict1 = {'Lot Size:': '0.07 Acres', 'Lot Dimensions:': '7.6 x 37', 'Lot Features:': 'Back Lane, Back Yard, Front Yard, Low Maintenance Landscape, Level, Near Public Transit', 'Front Exposure:': 'South', 'Community Features:': 'Sidewalks', 'Zoning:': 'R-C2'}
 dict2 = {'Lot Size:': ['0.08 Acres'], 'Lot Dimensions:': ['8.27 x 35.02'], 'Lot Features:': ['Back Lane, Back Yard, Near Shopping Center, Near Public Transit, Private'], 'Front Exposure:': ['South'], 'Community Features:': ['Lake, Playground, Sidewalks, Street Lights'], 'Sewer Septic:': ['Public Sewer'], 'Zoning:': ['R-2M']}
 
-dictList = [dict1,dict2]
-
-dt = pd.DataFrame(dictList)
-
-print(dt)
-
 
 # df1 = pd.DataFrame(data=Array1)
 # df2 = pd.DataFrame(data=Array2)
@@ -30,4 +24,11 @@ print(dt)
 # df1 = df1[1:]
 # print(df1)
 
+
+import DataExtract
+# When Progress is False
+Url = "https://www.livrealestate.ca/calgary-city-centre/"
+Pages = 2
+MlsData = DataExtract.liveMls(Url, Pages)
+print(MlsData.getRoomInfo(progress=True))
 
