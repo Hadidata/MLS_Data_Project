@@ -19,7 +19,7 @@ def extractSoup(url,name,attrs):
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html5lib')
-    table = soup.findAll(name, attrs=attrs)
+    table = soup.find(name, attrs=attrs)
     return table
 
 ############# functions to remove after ###############
@@ -123,7 +123,6 @@ def MlsMainInfo(URL):
         #table.append([elem.strong.text, elem.span.text])
     return table
 
-
 # This function returns the price of an MLS listing requires the URL
 # and returns the price
 # covert into private functions in the object
@@ -146,7 +145,6 @@ def MlsDescription(URL):
     soup = BeautifulSoup(r.content, 'html5lib')
     description = soup.find('div', {'class': 'si-ld-description js-listing-description'})
     return description.text.strip()
-
 
 # this function coverts a dictionary to a panda data frame requires
 # the dictionary as input

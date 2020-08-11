@@ -44,7 +44,28 @@ class WebConnector():
 
     # this method
     def PullListingData(self, mls_url):
-        pass
+
+        assert type(mls_url) == str, "city must be expressed as a string"
+        assert len(mls_url) > 0, "city length must be greater then 0"
+
+        r = requests.get(mls_url)
+        soup = BeautifulSoup(r.content, 'html5lib')
+        priceChange = soup.find('section', {'class': 'si-ld-price-history is-collapse js-collapsible'})
+        roomInfo = soup.find('table', {'id': 'tblRooms'})
+        mainInfo = soup.find('div', {'class': 'si-ld-primary__info clearfix'})
+        price = soup.find('span', {'class': 'si-ld-top__price'})
+        description = soup.find('div', {'class': 'si-ld-description js-listing-description'})
+        output_dict = {'priceChange':priceChange,
+                       'roomInfo':roomInfo,
+                       'mainInfo':mainInfo,
+                       'price': price,
+                       'description': description}
+
+        tables = ["Architecture", "Features / Amenities", "Property Features", "Tax and Financial Info"]
+        for table in tables:
+            output_dict[table] = self.__MlsInfo(mls_url,table)
+
+        return output_dict
 
     # this property extracts the last page of a quadrant requires
     # city and region be popuilated in the PullRegionalLinks Method
@@ -66,3 +87,22 @@ class WebConnector():
             if fun.isNumber(item.text) == True:
                 pageList.append(int(item.text))
         return max(pageList)
+
+    def __MlsInfo(self,url, table_name):
+
+        assert type(url) == str, "URL must be expressed as a string"
+        assert len(url) > 0, "URL length must be greater then 0"
+
+        r = requests.get(url)
+        soup = BeautifulSoup(r.content, 'html5lib')
+        tables = soup.findAll('div', {'class': 'si-ld-details__item js-masonary-item js-collapsible'})
+        output = None
+        for table in tables:
+            if table.h2.text == table_name:
+                output = table.findAll("div")
+        return output
+
+# testClass = WebConnector("https://www.livrealestate.ca/")
+# Extract = testClass.PullListingData("https://www.livrealestate.ca/idx/10-country-hills-dr-nw-calgary-ab-t3k-4s5/13005602_spid/")
+# for x in Extract:
+#   print(x , Extract[x])
