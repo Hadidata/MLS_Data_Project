@@ -45,8 +45,8 @@ class WebConnector():
     # this method
     def PullListingData(self, mls_url):
 
-        assert type(mls_url) == str, "city must be expressed as a string"
-        assert len(mls_url) > 0, "city length must be greater then 0"
+        assert type(mls_url) == str, "mls_url must be expressed as a string"
+        assert len(mls_url) > 0, "mls_url length must be greater then 0"
 
         r = requests.get(mls_url)
         soup = BeautifulSoup(r.content, 'html5lib')
@@ -90,8 +90,8 @@ class WebConnector():
 
     def __MlsInfo(self,url, table_name):
 
-        assert type(url) == str, "URL must be expressed as a string"
-        assert len(url) > 0, "URL length must be greater then 0"
+        assert type(url) == str, "url must be expressed as a string"
+        assert len(url) > 0, "url length must be greater then 0"
 
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'html5lib')
@@ -101,8 +101,3 @@ class WebConnector():
             if table.h2.text == table_name:
                 output = table.findAll("div")
         return output
-
-# testClass = WebConnector("https://www.livrealestate.ca/")
-# Extract = testClass.PullListingData("https://www.livrealestate.ca/idx/10-country-hills-dr-nw-calgary-ab-t3k-4s5/13005602_spid/")
-# for x in Extract:
-#   print(x , Extract[x])
