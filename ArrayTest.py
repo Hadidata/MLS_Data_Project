@@ -1,34 +1,76 @@
-import numpy as np
+from WebConnector import WebConnector
 import pandas as pd
-import Functions as fun
 
+# this function is a test to extract all data that is not room or
+# price change history,
+def getAllData(cityQuad):
+    # extract all the url for the city quadrant
 
-URL = "https://www.livrealestate.ca/idx/408-33-ave-nw-calgary-ab-t2a-7s4/13043246_spid/"
-URL1 = "https://www.livrealestate.ca/idx/443-mahogany-blvd-se-calgary-ab-t3m-1z5/13032683_spid/"
+    con = WebConnector("https://www.livrealestate.ca")
+    urlList = con.PullRegionalLinks("calgary", cityQuad,progress=True)
+    # extract data for the following dictionary objects
+    # main info, price, description
+    # "Architecture", "Features / Amenities", "Property Features", "Tax and Financial Info"
+    # Community Info
 
-#print(fun.MlsInfo(URL,"Property Features"))
-#print(fun.MlsInfo(URL1,"Property Features"))
+    mlslist = []
+    ind = 0
+    maxInd = len(urlList)
+    for url in urlList:
+        mlsobj = con.PullListingData(url)
+        # main info
+        mlsData = {}
+        maininfo = mlsobj['mainInfo']
+        if maininfo != None:
+            for elem in maininfo.findAll('div'):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
 
-dict1 = {'Lot Size:': '0.07 Acres', 'Lot Dimensions:': '7.6 x 37', 'Lot Features:': 'Back Lane, Back Yard, Front Yard, Low Maintenance Landscape, Level, Near Public Transit', 'Front Exposure:': 'South', 'Community Features:': 'Sidewalks', 'Zoning:': 'R-C2'}
-dict2 = {'Lot Size:': ['0.08 Acres'], 'Lot Dimensions:': ['8.27 x 35.02'], 'Lot Features:': ['Back Lane, Back Yard, Near Shopping Center, Near Public Transit, Private'], 'Front Exposure:': ['South'], 'Community Features:': ['Lake, Playground, Sidewalks, Street Lights'], 'Sewer Septic:': ['Public Sewer'], 'Zoning:': ['R-2M']}
+        # price
+        price = mlsobj['price'].text.strip()
+        mlsData.update({"Price": price})
 
+        # description
+        description = mlsobj['description'].text.strip()
+        mlsData.update({"Description": description})
 
-# df1 = pd.DataFrame(data=Array1)
-# df2 = pd.DataFrame(data=Array2)
-#
-# app = df1.append(df2)
+        # Architecture
+        arch = mlsobj['Architecture']
+        if arch != None:
+            for elem in arch.findAll("div"):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
 
-# URL = "https://www.livrealestate.ca/idx/408-33-ave-nw-calgary-ab-t2a-7s4/13043246_spid/"
-# array = fun.MlsRoomInfo(URL)
-# df1 = pd.DataFrame(array, columns=array[0])
-# df1 = df1[1:]
-# print(df1)
+        # "Features / Amenities"
+        feat = mlsobj["Features / Amenities"]
+        if feat != None:
+            for elem in feat.findAll("div"):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
 
+        # Property Features
+        prop = mlsobj["Property Features"]
+        if prop != None:
+            for elem in prop.findAll("div"):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
 
-import DataExtract
-# When Progress is False
-Url = "https://www.livrealestate.ca/calgary-city-centre/"
-Pages = 2
-MlsData = DataExtract.liveMls(Url, Pages)
-print(MlsData.getRoomInfo(progress=True))
+        # Tax and Financial Info
+        fin = mlsobj["Tax and Financial Info"]
+        if fin != None:
+            for elem in fin.findAll("div"):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
+
+        # Community Info
+        com = mlsobj["Community Information"]
+        if com != None:
+            for elem in com.findAll("div"):
+                mlsData.update({elem.strong.text: elem.span.text.strip()})
+
+        mlslist.append(mlsData)
+        ind = ind + 1
+        print("Listing " + str(ind) + " of " + str(maxInd) + " extracted")
+    return mlslist
+
+if __name__ == '__main__':
+    data = pd.DataFrame(getAllData("city-centre"))
+    csvString = "C://Users//Hadi-PC//PycharmProjects//Extracts//DataOutput//AllDataCityCenter.csv"
+    data.to_csv(csvString,index=False)
+
 

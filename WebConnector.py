@@ -28,7 +28,7 @@ class WebConnector():
             page_first = 1
 
         linkList = []
-        frontUrl = "https://www.livrealestate.ca/idx/"
+        frontUrl = "https://www.livrealestate.ca"
         for page in range(page_first,page_last+1):
             pageLink = self.mainUrl + "/" + city + "-" + region + "/?pg=" + str(page)
             r = requests.get(pageLink)
@@ -55,11 +55,13 @@ class WebConnector():
         mainInfo = soup.find('div', {'class': 'si-ld-primary__info clearfix'})
         price = soup.find('span', {'class': 'si-ld-top__price'})
         description = soup.find('div', {'class': 'si-ld-description js-listing-description'})
+        communityInfo = soup.find('div', {'class': 'si-ld-details__item clearfix js-masonary-item js-collapsible'})
         output_dict = {'priceChange':priceChange,
                        'roomInfo':roomInfo,
                        'mainInfo':mainInfo,
                        'price': price,
-                       'description': description}
+                       'description': description,
+                       'Community Information': communityInfo}
 
         tables = ["Architecture", "Features / Amenities", "Property Features", "Tax and Financial Info"]
         for table in tables:
@@ -99,5 +101,5 @@ class WebConnector():
         output = None
         for table in tables:
             if table.h2.text == table_name:
-                output = table.findAll("div")
+                output = table
         return output
