@@ -8,6 +8,18 @@ import pandas as pd
 import Functions as fun
 import csv
 
+#Declare static values that need to be changed here
+
+def priceChangeHistory():
+    colNames = ['Link','Date','Old Price','New Price','Percent Change']
+    return colNames
+
+def roomInfo():
+    colNames = ['Link', 'Rooms', 'Level', 'Size', 'Description']
+    return colNames
+
+
+
 # This Class extracts data from the website Live Real Estate
 # The property of this class includes the URL for the city quadrant
 # number of pages to extract (if left blank then the peoperty will be
@@ -65,7 +77,7 @@ class liveMls:
     # returns a dataframe
     def getPriceChangeHistory(self, progress=False):
         links = self.getMlsUrl(progress=progress)
-        colNames = ['Link','Date','Old Price','New Price','Percent Change']
+        colNames = priceChangeHistory()
         data = []
         indPage = 1
         MaxPage = len(links)
@@ -89,7 +101,7 @@ class liveMls:
     # The method returns Roominfo of a specific MLS listing as a dataframe
     def getRoomInfo(self, progress=False):
         links = self.getMlsUrl(progress=progress)
-        colNames = ['Link', 'Rooms', 'Level', 'Size', 'Description']
+        colNames = roomInfo()
         data = []
         indPage = 1
         MaxPage = len(links)
@@ -110,9 +122,18 @@ class liveMls:
         dataFrame = pd.DataFrame(data, columns=colNames)
         return dataFrame
 
-    #This method returns the properties of an Mls listing returns a dataframe
-    def getMaininfo(self, infoType, progress=False):
-        pass
+    #This method returns information about an MLS listing based on the header
+    #requires the header name under info type to check against
+    def getHeaderInfo(self, infoType, progress=False):
+        links = self.getMlsUrl(progress=progress)
+
+        for link in links:
+            r = requests.get(link)
+            soup = BeautifulSoup(r.content, 'html5lib')
+            allHeaders = soup.findAll('div', {'class' :'si-ld-details__item js-masonary-item js-collapsible'})
+
+            print(12)
+        return(allHeaders)
 
     ### Private classes go here ###
 
@@ -128,6 +149,17 @@ class liveMls:
             if fun.isNumber(item.text) == True:
                 pageList.append(int(item.text))
         return max(pageList)
+
+
+def test():
+    URL = "https://www.livrealestate.ca/calgary-city-centre/"
+    mls = liveMls(Url=URL,Pages=1)
+    data = mls.getHeaderInfo(infoType="COMMUNITY INFORMATION")
+    print(data)
+
+if __name__ == '__main__':
+    test()
+
 
 # Dump to csv for comprehensive logic testing (price history)
 #
