@@ -8,7 +8,7 @@ import pandas as pd
 import Functions as fun
 import csv
 
-#Declare static values that need to be changed here
+#Declare static values that can be changed here
 
 def priceChangeHistory():
     colNames = ['Link','Date','Old Price','New Price','Percent Change']
@@ -128,21 +128,33 @@ class liveMls:
         return dataFrame
 
     #This method returns information about an MLS listing based on the header
-    #requires the header name under info type to check against
+    #requires the mls listing URl, header name under info type to check against
+    #outputs a dataframe table with the URL it pulled data from and the columns extracted from it
     def getHeaderInfo(self,links,infoType, progress=False):
         #links = self.getMlsUrl(progress=progress)
         assert links != None, "Links cannot be empty, Did you forgot to call the getMlsUrl Method?"
+        assert len(infoType) > 0, "infoType must have a valid header value"
+
         data = []
         for link in links:
             r = requests.get(link)
             soup = BeautifulSoup(r.content, 'html5lib')
-            allHeaders = soup.findAll('div', {'class' :'si-ld-details__item js-masonary-item js-collapsible'})
-            for header in allHeaders:
-                if infoType == header.find('h2').text:
-                    table = header.findAll('div')
-                    for elem in table:
-                        data.append([link,elem.find('strong').text,elem.find('span').text.strip()])
-        return(data)
+            propertyDetails = soup.find('section',{'id':'propertyDetails'})
+            for header in propertyDetails:
+                #print(header.find('h2'))
+                if header.find('h2') != -1:
+                    if infoType == header.find('h2').text:
+                        table = header.findAll('div')
+                        for elem in table:
+                            col = elem.find('strong').text
+                            val = elem.find('span').text.strip()
+                            data.append([link,col,[val]])
+
+        #pivoting logic to show data as a column
+        col = ('url', 'col', 'values')
+        pddata = pd.DataFrame(data, columns=col)
+        pivotData = pddata.pivot(index='url', columns='col', values='values')
+        return(pivotData)
 
     ### Private classes go here ###
 
@@ -163,10 +175,14 @@ class liveMls:
 def test():
     URL = "https://www.livrealestate.ca/calgary-city-centre/"
     mls = liveMls(Url=URL,Pages=1)
-    mlslinks = mls.getMlsUrl(progress=True)
-    data = mls.getHeaderInfo(infoType='Architecture',links=mlslinks)
-    for elem in data:
-        print(elem)
+    mlslinks = mls.getMlsUrl(progress=False)
+    propertyDetails = ['Community Information','Architecture',
+                  'Property Features',
+                  'Tax and Financial Info']
+
+    for details in propertyDetails:
+        data = mls.getHeaderInfo(infoType=details,links=mlslinks)
+        data.to_csv("C:\\Users\\Hadi-PC\\Desktop\\Projects\\MLS_Test\\ " + details + ".csv")
 
 if __name__ == '__main__':
     test()
