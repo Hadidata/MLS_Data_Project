@@ -12,11 +12,12 @@ def main():
     URL = "https://www.livrealestate.ca/calgary-city-centre/"
 
     #initalize the mls class
-    mls = liveMls(Url=URL,Pages=2)
+    mls = liveMls(Url=URL,Pages=1)
 
     #get the urls of each listing
-    listing_url = mls.getPriceChangeHistory(progress=True)
-    listing_url.to_csv("C:/Users/Hadi-PC/Downloads/room_data_test.csv",index=False)
+    listing_url = mls.getMlsUrl(progress=True)
+    mlsPriceHistory = mls.getPriceChangeHistory(listing_url,progress=True)
+    #listing_url.to_csv("C:/Users/Hadi-PC/Downloads/room_data_test.csv",index=False)
 
 
 if __name__== "__main__":

@@ -53,6 +53,7 @@ class liveMls:
         return PageLinks
 
     # This method returns the Url of the individual Mls Listing
+    # intalize this before using any other methods
     def getMlsUrl(self, progress=False):
 
         linkList = []
@@ -75,8 +76,10 @@ class liveMls:
 
     # This property returns the price change history (if avaliable) of all
     # returns a dataframe
-    def getPriceChangeHistory(self, progress=False):
-        links = self.getMlsUrl(progress=progress)
+    def getPriceChangeHistory(self,links,progress=False):
+        #links = self.getMlsUrl(progress=progress)
+        assert links != None, "Links cannot be empty, Did you forgot to call the getMlsUrl Method?"
+
         colNames = priceChangeHistory()
         data = []
         indPage = 1
@@ -99,8 +102,10 @@ class liveMls:
         return dataFrame
 
     # The method returns Roominfo of a specific MLS listing as a dataframe
-    def getRoomInfo(self, progress=False):
-        links = self.getMlsUrl(progress=progress)
+    def getRoomInfo(self, links,progress=False):
+        #links = self.getMlsUrl(progress=progress)
+        assert links != None, "Links cannot be empty, Did you forgot to call the getMlsUrl Method?"
+
         colNames = roomInfo()
         data = []
         indPage = 1
@@ -124,16 +129,20 @@ class liveMls:
 
     #This method returns information about an MLS listing based on the header
     #requires the header name under info type to check against
-    def getHeaderInfo(self, infoType, progress=False):
-        links = self.getMlsUrl(progress=progress)
-
+    def getHeaderInfo(self,links,infoType, progress=False):
+        #links = self.getMlsUrl(progress=progress)
+        assert links != None, "Links cannot be empty, Did you forgot to call the getMlsUrl Method?"
+        data = []
         for link in links:
             r = requests.get(link)
             soup = BeautifulSoup(r.content, 'html5lib')
             allHeaders = soup.findAll('div', {'class' :'si-ld-details__item js-masonary-item js-collapsible'})
-
-            print(12)
-        return(allHeaders)
+            for header in allHeaders:
+                if infoType == header.find('h2').text:
+                    table = header.findAll('div')
+                    for elem in table:
+                        data.append([link,elem.find('strong').text,elem.find('span').text.strip()])
+        return(data)
 
     ### Private classes go here ###
 
@@ -154,8 +163,10 @@ class liveMls:
 def test():
     URL = "https://www.livrealestate.ca/calgary-city-centre/"
     mls = liveMls(Url=URL,Pages=1)
-    data = mls.getHeaderInfo(infoType="COMMUNITY INFORMATION")
-    print(data)
+    mlslinks = mls.getMlsUrl(progress=True)
+    data = mls.getHeaderInfo(infoType='Architecture',links=mlslinks)
+    for elem in data:
+        print(elem)
 
 if __name__ == '__main__':
     test()
