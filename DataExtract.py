@@ -74,7 +74,37 @@ class liveMls:
                 indPage = indPage + 1
         return linkList
 
-    # This property returns the price change history (if avaliable) of all
+    # this method is used to extract the top level info of an MLS listing that
+    def getTopLevelInfo(self,links):
+        assert links != None, "Links cannot be empty, Did you forgot to call the getMlsUrl Method?"
+
+        #extract price, square feet, year
+        #everyting for the section class si-ld-primary
+        data = []
+        for link in links:
+            r = requests.get(link)
+            soup = BeautifulSoup(r.content, 'html5lib')
+            #extract the price of the MLS listing
+            price = soup.find('span',{'class':'si-ld-top__price'})
+            data.append([link, "Price", price.text.strip()])
+            details = soup.find('div',{'class':'si-ld-primary__info clearfix'})
+            #get description associated with the property
+            desc = soup.find('div',{'class':'si-ld-description js-listing-description'})
+            data.append([link,"Description",desc.text.strip()])
+            #to extract bottom level info that is tied to a table
+            for det in details:
+                if det.find('div') != -1:
+                    col = det.find('strong').text
+                    val = det.find('span').text.strip()
+                    data.append([link, col, val])
+        # pivoting logic to show data as a column
+        col = ('url', 'col', 'values')
+        pddata = pd.DataFrame(data, columns=col)
+        pivotData = pddata.pivot(index=col[0], columns=col[1], values=col[2])
+        return (pivotData)
+
+
+    # This method returns the price change history (if avaliable) of all
     # returns a dataframe
     def getPriceChangeHistory(self,links,progress=False):
         #links = self.getMlsUrl(progress=progress)
@@ -153,7 +183,7 @@ class liveMls:
         #pivoting logic to show data as a column
         col = ('url', 'col', 'values')
         pddata = pd.DataFrame(data, columns=col)
-        pivotData = pddata.pivot(index='url', columns='col', values='values')
+        pivotData = pddata.pivot(index=col[0], columns=col[1], values=col[2])
         return(pivotData)
 
     ### Private classes go here ###
@@ -176,13 +206,8 @@ def test():
     URL = "https://www.livrealestate.ca/calgary-city-centre/"
     mls = liveMls(Url=URL,Pages=1)
     mlslinks = mls.getMlsUrl(progress=False)
-    propertyDetails = ['Community Information','Architecture',
-                  'Property Features',
-                  'Tax and Financial Info']
-
-    for details in propertyDetails:
-        data = mls.getHeaderInfo(infoType=details,links=mlslinks)
-        data.to_csv("C:\\Users\\Hadi-PC\\Desktop\\Projects\\MLS_Test\\ " + details + ".csv")
+    data = mls.getTopLevelInfo(mlslinks)
+    data.to_csv("C:\\Users\\Hadi-PC\\Desktop\\Projects\\MLS_Test\\toplevelinfo.csv")
 
 if __name__ == '__main__':
     test()
